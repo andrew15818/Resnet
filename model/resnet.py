@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class res_block(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride):
+    def __init__(self, in_channels=64, out_channels=64, kernel_size=3, stride=2):
         super(res_block, self).__init__()
         self.layers = nn.Sequential(    
                         nn.Conv2d(in_channels, out_channels, kernel_size, stride),
@@ -75,9 +75,22 @@ class ResidualNet18(nn.Module):
         self.avg_pooling = nn.AvgPool2d(3, stride=2)
         # nn.flatten() ?
         # What is the output shape?
-        self.fc = nn.Linear(,1000)
+        self.fc = nn.Linear(1000,1000)
         self.softmax = nn.Softmax()
 
     def forward(self, x):
-        pass
+        x = self.conv1(x)
+        for conv_layer in self.conv2_x:
+            x = conv_layer(x)
+
+        for conv_layer in self.conv3_x:
+            x = conv_layer(x)
+
+        for conv_layer in self.conv4_x:
+            x = conv_layer(x)
+
+        for conv_layer in self.conv5_x:
+            x = conv_layer(x)
+        
+        return x
 
