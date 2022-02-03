@@ -5,10 +5,10 @@ class res_block(nn.Module):
     def __init__(self, in_channels=64, out_channels=64, kernel_size=3, stride=2):
         super(res_block, self).__init__()
         self.layers = nn.Sequential(    
-                        nn.Conv2d(in_channels, out_channels, kernel_size, stride),
+                        nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding=0),
                         nn.BatchNorm2d(out_channels),
                         nn.ReLU(),
-                        nn.Conv2d(in_channels, out_channels, kernel_size, stride),
+                        nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding=0),
                         nn.BatchNorm2d(out_channels),
                         nn.ReLU()
                     )
@@ -24,14 +24,16 @@ class ResidualNet18(nn.Module):
                             in_channels=3, 
                             out_channels=64, 
                             kernel_size=7, 
-                            stride=2
+                            stride=2,
+                            padding=0
                         )
         self.conv2_x = []
         self.conv2_x.append(nn.Conv2d(
                             in_channels=64,
                             out_channels=64,
                             kernel_size=3,
-                            stride=2
+                            stride=2,
+                            padding=0
                         )
         )
         for i in range(2):
@@ -79,7 +81,7 @@ class ResidualNet18(nn.Module):
         self.softmax = nn.Softmax()
 
     def forward(self, x):
-        x = self.conv1(x)
+        x = self.conv_1(x)
         for conv_layer in self.conv2_x:
             x = conv_layer(x)
 
