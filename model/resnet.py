@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class res_block(nn.Module):
     def __init__(self, in_channels=64, out_channels=64, kernel_size=3, stride=2):
@@ -33,10 +34,8 @@ class res_block(nn.Module):
         out += identity
         out = self.relu(out)
         return out
-'''
-According to the paper, if the layer has a stride of 2, it will downsample the 
-inputs, so in the residual we have to change the dimensions of the input.
-'''
+
+# TODO: Change the hard-coded channel numbers
 class ResidualNet18(nn.Module):
     def __init__(self):
         super(ResidualNet18, self).__init__()
@@ -50,7 +49,6 @@ class ResidualNet18(nn.Module):
         self.bn = nn.BatchNorm2d(num_features=32)
         self.relu = nn.ReLU()
 
-        
         
         self.conv2_x = nn.Sequential(
                 res_block(in_channels=32, out_channels=32), 
@@ -69,21 +67,21 @@ class ResidualNet18(nn.Module):
                 res_block(in_channels=128, out_channels=256),
                 res_block(in_channels=256, out_channels=256)
                 )
-        self.avg_pooling = nn.AdaptiveAvgPool2d((1, 1))
          
-        self.fc = nn.Linear(1000,10)
-        self.softmax = nn.Softmax()
+        self.fc = nn.Linear(256,10)
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         x = self.conv_1(x)
-        
-        for layer in self.conv2_x:
-            x = layer(x)
+        x = self.bn(x)
+        x = self.relu(x)
+        x = self.conv2_x(x)
         x = self.conv3_x(x)
         x = self.conv4_x(x)
         x = self.conv5_x(x)
-        x = self.avg_pooling(x)
-        print(x.shape)
+
+        x = F.avg_pool2d(x, 1)
+        x = x.view(x.size(0), -1)
         x = self.fc(x)
         x = self.softmax(x)
         return x
