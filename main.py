@@ -24,16 +24,29 @@ def train_loop():
     dataset = utils.CIFAR10Dataset(DATA_DIR)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     model = resnet.ResidualNet18()
-    loss = nn.Softmax()
+    loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
     losses, counter = [], []
     for epoch in range(epochs):
-        batch_loss = 0
+        running_loss = 0
         for idx, data in enumerate(dataloader):
             x, y = data
+
+            # reset the gradients
             optimizer.zero_grad()
             outputs = model(x)
+            loss = loss_fn(outputs, y)
+
+            # backprop
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+            
+            if idx % 2000 == 1999:
+                print(f'[epoch {epoch+1} batch {idx+1}]: {running_loss/2000}')
+                running_loss = 0
 
 
 def test_loop(data):
