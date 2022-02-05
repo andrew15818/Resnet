@@ -11,8 +11,8 @@ many computer vision papers, but due to hardware constraints I went with
 The dataset contains 50,000 32x32 training images belonging to 10 classes.
 
 
-## TODOs
-- Finish debugging the model itself.
-- Train and test.
-- Add command line options to adjust input file paths, hyperparameters, etc...
+## TODOs:
+- Increase the amount of epochs to train
+- Add data augmentations in dataset class
+- Add cmdline arguments for hyperparameters
 
