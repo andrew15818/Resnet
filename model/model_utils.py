@@ -32,7 +32,7 @@ class CIFAR10Dataset(Dataset):
                 )
         if self.test:
            self.batches = get_batch(os.path.join(img_dir, 'test_batch'))
-           self.len = self.batches[i][b'data'].shape[0]
+           self.len = self.batches[b'data'].shape[0]
            return
 
         self.filesize = 10000
