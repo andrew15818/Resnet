@@ -12,7 +12,8 @@ The dataset contains 50,000 32x32 training images belonging to 10 classes.
 
 
 ## TODOs:
-- Increase the amount of epochs to train
-- Add data augmentations in dataset class
-- Add cmdline arguments for hyperparameters
+- Increase the amount of epochs to train.
+- Measure the test loss after every training epoch.
+- Add data augmentations in dataset class.
+- Add cmdline arguments for hyperparameters.
 
