@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
@@ -12,41 +13,35 @@ DATA_DIR = '/home/poncedeleon/usb/cifar-10-batches-py'
 CLASSES = ['airplane', 'automobile', 'bird', 'cat', 
         'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
-# Could use this method besides custom dataset class
-def train_loop(dataloader, model, loss_fn):
-    # TODO: Use cmd-line args later
-    # Hyperparameters
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-    epochs = 10 
-    learning_rate = 0.01
+# Train the model one epoch
+def train_loop(dataloader, model, loss_fn, losses):
 
-    losses, counter = [], []
-    for epoch in range(epochs):
-        running_loss = 0
-        for idx, data in enumerate(dataloader):
-            x, y = data
+    running_loss = 0
+    for idx, data in enumerate(dataloader):
+        x, y = data
 
-            # reset the gradients
-            optimizer.zero_grad()
-            outputs = model(x)
-            loss = loss_fn(outputs, y)
+        # reset the gradients
+        optimizer.zero_grad()
+        outputs = model(x)
+        loss = loss_fn(outputs, y)
 
-            # backprop
-            loss.backward()
-            optimizer.step()
+        # backprop
+        loss.backward()
+        optimizer.step()
 
-            running_loss += loss.item()
-            
-            if idx % 2000 == 0:
-                print(f'[epoch {epoch+1} batch {idx+1}]: {running_loss/2000}')
-                running_loss = 0
+        running_loss += loss.item()
+        
+        if idx % 2000 == 0:
+            print(f'[epoch {epoch+1} batch {idx+1}]: {running_loss/2000}')
+            losses.append(running_loss)
+            running_loss = 0
 
-                # save the mdoel
-                torch.save(model.state_dict(), 'weights/model.pth')
+    # save the model 
+    torch.save(model.state_dict(), 'weights/model.pth')
     return model
 
 
-def test_loop(dataloader, model, loss_fn):
+def test_loop(dataloader, model, loss_fn) -> (float, float):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     test_loss, correct = 0, 0
@@ -59,9 +54,28 @@ def test_loop(dataloader, model, loss_fn):
     test_loss /= num_batches
     correct /= size
     print(f'Test error: \nAccuracy {100*correct} Avg loss {test_loss:>8f}\n')
+    return test_loss, correct
 
+# Plot the loss/accuracy values
+def plot(loss:list, accuracies=None, title=None):
+    plt.title(title)
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.plot(loss, color='red')
+    if acccuracies:
+        plt.plot(accuracies, color='green')
+    plt.show()
+    plt.close()
+    
 if __name__=='__main__':
+    
+     # Hyperparameters
     batch_size = 32
+    learning_rate = 0.01
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+    epochs = 10 
+    loss_fn = nn.CrossEntropyLoss()
+    
     # Get the dataset and dataloader ready
     dataset = utils.CIFAR10Dataset(DATA_DIR)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
@@ -71,18 +85,23 @@ if __name__=='__main__':
     
     model = resnet.ResidualNet18()
 
-    # TODO: skip training for debugging atm
-    skip_training = False
+    skipTraining = False
     try:
         model.load_state_dict(torch.load('weights/model.pth'))
-        skip_training = True
+        skipTraining = True
     except:
-        print('File not found')
+        print('Weight file not found')
+    
+    losses, test_losses, test_accs  = [], [], []
+    for i in range(epochs):
 
-
-    loss_fn = nn.CrossEntropyLoss()
    
-    if not skip_training:
-        train_loop(dataloader, model, loss_fn)
+        train_loop(dataloader, model, loss_fn, losses)
 
-    test_loop(test_dataloader, model, loss_fn)
+        test_loss, acc = test_loop(test_dataloader, model, loss_fn)
+        test_losses.append(test_loss)
+        test_accs.append(acc)
+
+    plot(losses, None, 'training_loss')
+    plt(test_losses, test_accs, 'testing_loss')
+    torch.save(model.state_dict(), 'weights/model.pth')
