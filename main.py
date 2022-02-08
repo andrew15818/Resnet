@@ -31,8 +31,8 @@ def train_loop(dataloader, model, loss_fn, losses):
 
         running_loss += loss.item()
         
-        if idx % 2000 == 0:
-            print(f'[epoch {epoch+1} batch {idx+1}]: {running_loss/2000}')
+        if idx % 200 == 0:
+            print(f'[batch {idx+1}]: {running_loss/2000}')
             losses.append(running_loss)
             running_loss = 0
 
@@ -62,7 +62,7 @@ def plot(loss:list, accuracies=None, title=None):
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.plot(loss, color='red')
-    if acccuracies:
+    if accuracies:
         plt.plot(accuracies, color='green')
     plt.show()
     plt.close()
@@ -72,9 +72,9 @@ if __name__=='__main__':
      # Hyperparameters
     batch_size = 32
     learning_rate = 0.01
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+    
     epochs = 10 
-    loss_fn = nn.CrossEntropyLoss()
+    
     
     # Get the dataset and dataloader ready
     dataset = utils.CIFAR10Dataset(DATA_DIR)
@@ -84,6 +84,8 @@ if __name__=='__main__':
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
     
     model = resnet.ResidualNet18()
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+    loss_fn = nn.CrossEntropyLoss()
 
     skipTraining = False
     try:
@@ -103,5 +105,5 @@ if __name__=='__main__':
         test_accs.append(acc)
 
     plot(losses, None, 'training_loss')
-    plt(test_losses, test_accs, 'testing_loss')
+    plot(test_losses, test_accs, 'testing_loss')
     torch.save(model.state_dict(), 'weights/model.pth')
