@@ -17,11 +17,11 @@ CLASSES = ['airplane', 'automobile', 'bird', 'cat',
 parser = argparse.ArgumentParser(description="Set hyperparamters and other important options.")
 parser.add_argument('-d', '--data', type=str, default=DATA_DIR,
                     help="Path to data folder.")
-parser.add_argument('-b', '--batch_size', type=int, nargs=1, default=32,
+parser.add_argument('-b', '--batch_size', type=int, default=32,
                     help="Batch size.")
-parser.add_argument('--lr',  type=float, nargs=1,
-                help="(Base) Learning rate.")
-parser.add_argument('--checkpoint', type=str, nargs=1,
+parser.add_argument('--lr',  type=float, nargs=1, default=0.001,
+                    help='Base learning rate.')
+parser.add_argument('--checkp int', type=str, nargs=1,
                     help="Path to checkpoint file.")
 parser.add_argument('--epochs', type=int, default=10,
                     help='Times we loop through entire dataset.')
@@ -50,7 +50,7 @@ def train_loop(dataloader, model, loss_fn, losses):
             running_loss = 0
 
     # save the model 
-    torch.save(model.state_dict(), 'weights/model.pth')
+    torch.save(model.state_dict(), 'weights/model.pt')
     return model
 
 
@@ -76,6 +76,7 @@ def plot(loss:list, accuracies=None, title=None):
     plt.ylabel('Accuracy')
     plt.plot(loss, color='red')
     if accuracies:
+        plt.ylabel('Accuracy')
         plt.plot(accuracies, color='green')
     plt.show()
     plt.close()
@@ -84,10 +85,7 @@ if __name__=='__main__':
 
     args = parser.parse_args() 
      # Hyperparameters
-    batch_size = 32
-    learning_rate = 0.01
     
-    epochs = 10 
     
     
     # Get the dataset and dataloader ready
@@ -95,10 +93,10 @@ if __name__=='__main__':
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
     test_dataset = utils.CIFAR10Dataset(args.data, test=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True)
     
     model = resnet.ResidualNet18()
-    optimizer = optim.SGD(model.parameters(), lr=args.learning_rate)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr)
     loss_fn = nn.CrossEntropyLoss()
 
     skipTraining = False
@@ -109,7 +107,7 @@ if __name__=='__main__':
         print('Weight file not found')
     
     losses, test_losses, test_accs  = [], [], []
-    for i in range(epochs):
+    for i in range(args.epochs):
 
    
         train_loop(dataloader, model, loss_fn, losses)
