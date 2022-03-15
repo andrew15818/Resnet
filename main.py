@@ -1,3 +1,4 @@
+import argparse
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,9 +10,21 @@ from torch.utils.data import DataLoader, Dataset
 import model.model_utils as utils
 import model.resnet as resnet
 
+
 DATA_DIR = '/home/poncedeleon/usb/cifar-10-batches-py'
 CLASSES = ['airplane', 'automobile', 'bird', 'cat', 
         'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+parser = argparse.ArgumentParser(description="Set hyperparamters and other important options.")
+parser.add_argument('-d', '--data', type=str, default=DATA_DIR,
+                    help="Path to data folder.")
+parser.add_argument('-b', '--batch_size', type=int, nargs=1, default=32,
+                    help="Batch size.")
+parser.add_argument('--lr',  type=float, nargs=1,
+                help="(Base) Learning rate.")
+parser.add_argument('--checkpoint', type=str, nargs=1,
+                    help="Path to checkpoint file.")
+parser.add_argument('--epochs', type=int, default=10,
+                    help='Times we loop through entire dataset.')
 
 # Train the model one epoch
 def train_loop(dataloader, model, loss_fn, losses):
@@ -68,7 +81,8 @@ def plot(loss:list, accuracies=None, title=None):
     plt.close()
     
 if __name__=='__main__':
-    
+
+    args = parser.parse_args() 
      # Hyperparameters
     batch_size = 32
     learning_rate = 0.01
@@ -77,14 +91,14 @@ if __name__=='__main__':
     
     
     # Get the dataset and dataloader ready
-    dataset = utils.CIFAR10Dataset(DATA_DIR)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    dataset = utils.CIFAR10Dataset(args.data)
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
-    test_dataset = utils.CIFAR10Dataset(DATA_DIR, test=True)
+    test_dataset = utils.CIFAR10Dataset(args.data, test=True)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
     
     model = resnet.ResidualNet18()
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(model.parameters(), lr=args.learning_rate)
     loss_fn = nn.CrossEntropyLoss()
 
     skipTraining = False
