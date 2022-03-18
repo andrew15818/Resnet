@@ -26,8 +26,10 @@ class CIFAR10Dataset(Dataset):
         self.len = 0
         # TODO: Maybe add some data augmentations here
         self.trans = transforms.Compose([
+                    transforms.RandomHorizontalFlip(p=0.4),
                     transforms.ToTensor(),
-                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                    #transforms.RandomRotation(degrees=70)
                     ]
                 )
         if self.test:
