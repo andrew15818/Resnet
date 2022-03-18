@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
+import torchvision.models as models
 from torch.utils.data import DataLoader, Dataset
 
 import model.model_utils as utils
@@ -21,10 +22,12 @@ parser.add_argument('-b', '--batch_size', type=int, default=32,
                     help="Batch size.")
 parser.add_argument('--lr',  type=float, nargs=1, default=0.001,
                     help='Base learning rate.')
-parser.add_argument('--checkp int', type=str, nargs=1,
+parser.add_argument('--checkp', type=str, nargs=1,
                     help="Path to checkpoint file.")
 parser.add_argument('--epochs', type=int, default=10,
                     help='Times we loop through entire dataset.')
+parser.add_argument('--use_default', action='store_true',
+                    help='Use default PyTorch implementation of Resnet18.')
 
 # Train the model one epoch
 def train_loop(dataloader, model, loss_fn, losses):
@@ -87,15 +90,19 @@ if __name__=='__main__':
      # Hyperparameters
     
     
-    
     # Get the dataset and dataloader ready
     dataset = utils.CIFAR10Dataset(args.data)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
     test_dataset = utils.CIFAR10Dataset(args.data, test=True)
     test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True)
-    
-    model = resnet.ResidualNet18()
+     
+    # Use default Pytorch model or our own
+    if args.use_default:
+        model = models.resnet18(pretrained=False)
+    else:
+        model = resnet.ResidualNet18() 
+
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
     loss_fn = nn.CrossEntropyLoss()
 
