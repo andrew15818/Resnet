@@ -36,9 +36,10 @@ class res_block(nn.Module):
         return out
 
 # TODO: Change the hard-coded channel numbers
-class ResidualNet18(nn.Module):
-    def __init__(self):
-        super(ResidualNet18, self).__init__()
+class ResNet18(nn.Module):
+    def __init__(self, num_classes=10):
+        super(ResNet18, self).__init__()
+        self.num_classes = num_classes
         self.conv_1 = nn.Conv2d(
                             in_channels=3, 
                             out_channels=32, 
@@ -68,8 +69,7 @@ class ResidualNet18(nn.Module):
                 res_block(in_channels=256, out_channels=256)
                 )
          
-        self.fc = nn.Linear(256,10)
-        self.softmax = nn.Softmax(dim=1)
+        self.fc = nn.Linear(256, num_classes)
 
     def forward(self, x):
         x = self.conv_1(x)
@@ -83,6 +83,5 @@ class ResidualNet18(nn.Module):
         x = F.avg_pool2d(x, 1)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
-        x = self.softmax(x)
         return x
 
