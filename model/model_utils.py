@@ -19,27 +19,42 @@ def reshape_row(row:np.array):
     img = np.array([r, g, b]).T
     return img 
 
+class AverageMeter(object):
+    def __init__(self, name, fmt=':f'):
+        self.name = name
+        self.fmt = fmt
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+    def __str__(self):
+        fmstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
 class CIFAR10Dataset(Dataset):
-    def __init__(self, img_dir, test=False):
-        self.test = test
+    def __init__(self, img_dir, transform=None, train=True):
+        self.train = train 
         self.batches = {}
         self.len = 0
-        # TODO: Maybe add some data augmentations here
-        self.trans = transforms.Compose([
-                    transforms.RandomHorizontalFlip(p=0.4),
-                    transforms.ToTensor(),
-                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-                    #transforms.RandomRotation(degrees=70)
-                    ]
-                )
-        if self.test:
+        self.transform = transform
+
+        if not self.train:
            self.batches = get_batch(os.path.join(img_dir, 'test_batch'))
            self.len = self.batches[b'data'].shape[0]
            return
 
+        # How many samples per file in the cifar10 tarball (1-5)
         self.filesize = 10000
-        
-        # Dataset information is spread on 5 batches
+
+        # Dataset information is spread over 5 files
         for i in range(1, 6):
             self.batches[i] = get_batch(os.path.join(img_dir, f'data_batch_{i}'))
             self.len += self.batches[i][b'data'].shape[0]
@@ -50,7 +65,7 @@ class CIFAR10Dataset(Dataset):
     def __getitem__(self, idx):
 
         # Index of dictionary which contains sample
-        if self.test:
+        if not self.train:
             x = self.batches[b'data'][idx]
             label = self.batches[b'labels'][idx]
         else:
@@ -63,8 +78,7 @@ class CIFAR10Dataset(Dataset):
         img = reshape_row(x)
 
         x = Image.fromarray(img)
-        x = self.trans(x)
+        x = self.transform(x)
 
         return x, label 
-
 
