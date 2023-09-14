@@ -10,10 +10,13 @@ many computer vision papers, but due to hardware constraints I went with
 [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) instead.
 The dataset contains 50,000 32x32 training images belonging to 10 classes.
 
+By default the model is trained for 90 epochs using the SGD optimizer and a cosine annealing learning rate scheduler.
+The performance is as follows
 
-## TODOs:
-- Increase the amount of epochs to train.
-- Measure the test loss after every training epoch.
-- Add data augmentations in dataset class.
-- Add cmdline arguments for hyperparameters.
+|Model|Epochs|Dataset|Accuracy|
+|:---:|:---:|:---:|:---:|
+resnet18|90|CIFAR10||
+
+### ToDo
+- Remove the hard-coded block sizes to allow for larger models (e.g. R50).
 
